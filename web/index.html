@@ -1,0 +1,659 @@
+<title>Carbonite Marker Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* ---------------------------------------------------------------- tokens */
+  :root {
+    --paper:        #e9ecef;
+    --sheet:        #fdfdfc;
+    --sheet-2:      #f2f0f7;
+    --edge:         #c9ced6;
+    --edge-soft:    #dfe3e9;
+    --ink:          #161d26;
+    --ink-2:        #4d5a67;
+    --ink-3:        #7b8794;
+    --carbon:       #3a3f8f;
+    --carbon-soft:  #e6e6f5;
+    --ok:           #1c6b52;
+    --ok-soft:      #dfeee8;
+    --warn:         #99621f;
+    --warn-soft:    #f6ebd9;
+    --stop:         #a5352b;
+    --stop-soft:    #f7e2df;
+    --flag:         #b5486a;
+
+    --display: "Newsreader", Georgia, "Times New Roman", serif;
+    --body: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    --r-sm: 3px;
+    --r-md: 5px;
+    --shadow: 0 1px 2px rgba(22, 29, 38, .07), 0 8px 24px -16px rgba(22, 29, 38, .35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:       #14181d;
+      --sheet:       #1c2127;
+      --sheet-2:     #201f2b;
+      --edge:        #333b45;
+      --edge-soft:   #272d35;
+      --ink:         #e7eaee;
+      --ink-2:       #a3aeba;
+      --ink-3:       #78838f;
+      --carbon:      #9aa0f0;
+      --carbon-soft: #262a45;
+      --ok:          #6cc4a1;
+      --ok-soft:     #17302a;
+      --warn:        #d9a860;
+      --warn-soft:   #33281a;
+      --stop:        #e58b80;
+      --stop-soft:   #38211f;
+      --flag:        #e08aa4;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px -16px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:       #14181d;
+    --sheet:       #1c2127;
+    --sheet-2:     #201f2b;
+    --edge:        #333b45;
+    --edge-soft:   #272d35;
+    --ink:         #e7eaee;
+    --ink-2:       #a3aeba;
+    --ink-3:       #78838f;
+    --carbon:      #9aa0f0;
+    --carbon-soft: #262a45;
+    --ok:          #6cc4a1;
+    --ok-soft:     #17302a;
+    --warn:        #d9a860;
+    --warn-soft:   #33281a;
+    --stop:        #e58b80;
+    --stop-soft:   #38211f;
+    --flag:        #e08aa4;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px -16px rgba(0, 0, 0, .8);
+  }
+
+  /* ------------------------------------------------------------- structure */
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 15px/1.55 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 28px 64px;
+  }
+
+  /* ---------------------------------------------------------------- header */
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .wordmark {
+    font: 600 34px/1 var(--display);
+    letter-spacing: -.015em;
+    margin: 0;
+  }
+
+  .wordmark span { color: var(--carbon); }
+
+  .tagline {
+    margin: 6px 0 0;
+    color: var(--ink-2);
+    max-width: 56ch;
+  }
+
+  .keychip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 500 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: var(--sheet);
+    border: 1px solid var(--edge);
+    border-radius: var(--r-sm);
+    padding: 8px 10px;
+  }
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: none; }
+  .dot.off { background: var(--warn); }
+
+  /* ------------------------------------------------------------------ tabs */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-top: -2px;
+  }
+
+  .tab {
+    appearance: none;
+    border: 1px solid var(--edge);
+    border-top: 2px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    color: var(--ink-2);
+    font: 600 12px/1 var(--body);
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    padding: 12px 18px;
+    cursor: pointer;
+    border-radius: 0 0 var(--r-sm) var(--r-sm);
+  }
+
+  .tab[aria-selected="true"] {
+    background: var(--sheet);
+    color: var(--ink);
+    border-top-color: var(--carbon);
+  }
+
+  .tab:hover { color: var(--ink); }
+  .tab:focus-visible { outline: 2px solid var(--carbon); outline-offset: 2px; }
+
+  /* ---------------------------------------------------------------- panels */
+  .panel { display: none; margin-top: 24px; }
+  .panel[data-active="true"] { display: block; }
+
+  .sheet {
+    background: var(--sheet);
+    border: 1px solid var(--edge);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow);
+  }
+
+  .sheet + .sheet { margin-top: 20px; }
+
+  .sheet-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--edge-soft);
+  }
+
+  .sheet-head h2 {
+    font: 600 17px/1.2 var(--display);
+    margin: 0;
+  }
+
+  .eyebrow {
+    font: 700 10px/1 var(--body);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .sheet-body { padding: 18px; }
+
+  /* ------------------------------------------------------- the two sheets */
+  .duplicate {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .leaf { padding: 18px; display: flex; flex-direction: column; }
+  .leaf textarea#f-assignment, .leaf textarea#f-prompt { flex: 1 1 auto; }
+
+  .leaf + .leaf {
+    background: var(--sheet-2);
+    border-left: 1px dashed var(--edge);
+  }
+
+  .leaf-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .leaf-head h3 {
+    font: 600 15px/1.2 var(--body);
+    margin: 0;
+  }
+
+  .leaf-note {
+    color: var(--ink-3);
+    font-size: 12.5px;
+    margin: 0 0 12px;
+  }
+
+  .sheet-no {
+    font: 500 11px/1 var(--mono);
+    color: var(--carbon);
+    border: 1px solid var(--carbon);
+    border-radius: 2px;
+    padding: 3px 5px;
+    flex: none;
+  }
+
+  /* ---------------------------------------------------------------- fields */
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+  }
+
+  label.f {
+    display: block;
+    font: 600 11px/1 var(--body);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 5px;
+  }
+
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    background: var(--sheet);
+    color: var(--ink);
+    border: 1px solid var(--edge);
+    border-radius: var(--r-sm);
+    padding: 8px 10px;
+    font: 400 14px/1.5 var(--body);
+  }
+
+  .leaf + .leaf textarea, .leaf + .leaf select { background: var(--sheet); }
+
+  textarea {
+    resize: vertical;
+    min-height: 190px;
+    font-family: var(--body);
+  }
+
+  textarea.doc { font: 400 13.5px/1.6 var(--mono); min-height: 150px; }
+
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--carbon);
+    outline-offset: 1px;
+    border-color: var(--carbon);
+  }
+
+  .hint { color: var(--ink-3); font-size: 12.5px; margin: 6px 0 0; }
+
+  /* --------------------------------------------------------------- buttons */
+  .btn {
+    appearance: none;
+    font: 600 13px/1 var(--body);
+    border-radius: var(--r-sm);
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--sheet);
+    padding: 11px 16px;
+    cursor: pointer;
+  }
+
+  .btn:hover { opacity: .9; }
+  .btn:focus-visible { outline: 2px solid var(--carbon); outline-offset: 2px; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink-2);
+    border-color: var(--edge);
+  }
+
+  .btn.ghost:hover { color: var(--ink); border-color: var(--ink-3); }
+
+  .btn.small { padding: 7px 11px; font-size: 12px; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+  /* ----------------------------------------------------------------- chips */
+  .token {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    font: 700 15px/1 var(--mono);
+    color: var(--flag);
+    background: var(--sheet);
+    border: 1px dashed var(--flag);
+    border-radius: var(--r-sm);
+    padding: 9px 12px;
+  }
+
+  .token .eyebrow {
+    color: var(--ink-3);
+    border-right: 1px solid var(--edge);
+    padding-right: 10px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 600 11px/1 var(--body);
+    letter-spacing: .04em;
+    border-radius: 20px;
+    padding: 5px 10px;
+    border: 1px solid transparent;
+  }
+
+  .pill.ok   { background: var(--ok-soft);   color: var(--ok); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.stop { background: var(--stop-soft); color: var(--stop); }
+  .pill.mute { background: var(--carbon-soft); color: var(--carbon); }
+
+  /* --------------------------------------------------------------- results */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1px;
+    background: var(--edge-soft);
+    border: 1px solid var(--edge-soft);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+  }
+
+  .stat { background: var(--sheet); padding: 12px 14px; }
+  .stat dt { font: 600 10px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 6px; }
+  .stat dd { margin: 0; font: 500 18px/1.1 var(--mono); font-variant-numeric: tabular-nums; }
+
+  .checklist { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+
+  .check {
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding-left: 2px;
+  }
+
+  .check b { font-weight: 600; }
+  .check .mark { font: 700 13px/1.5 var(--mono); }
+  .check.pass .mark { color: var(--ok); }
+  .check.warn .mark { color: var(--warn); }
+  .check.fail .mark { color: var(--stop); }
+  .check p { margin: 3px 0 0; color: var(--ink-2); font-size: 13px; }
+
+  .verdict {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    border-left: 4px solid var(--ink-3);
+    background: var(--sheet-2);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  }
+
+  .verdict h3 { font: 600 19px/1.2 var(--display); margin: 0; }
+  .verdict.echo   { border-left-color: var(--stop); background: var(--stop-soft); }
+  .verdict.watch  { border-left-color: var(--warn); background: var(--warn-soft); }
+  .verdict.clear  { border-left-color: var(--ok);   background: var(--ok-soft); }
+
+  .signal {
+    border-top: 1px solid var(--edge-soft);
+    padding: 13px 0;
+  }
+
+  .signal:first-child { border-top: none; }
+  .signal h4 { margin: 0 0 4px; font: 600 13px/1.3 var(--mono); }
+  .signal p { margin: 0; color: var(--ink-2); font-size: 13.5px; }
+  .signal .why { color: var(--ink-3); font-size: 12.5px; margin-top: 4px; }
+  .weight { float: right; font: 500 12px/1 var(--mono); color: var(--ink-3); }
+
+  .quote {
+    font: 400 12.5px/1.6 var(--mono);
+    background: var(--sheet-2);
+    border-left: 2px solid var(--flag);
+    padding: 8px 10px;
+    margin: 8px 0 0;
+    overflow-x: auto;
+  }
+
+  .caveats { background: var(--sheet-2); border-radius: var(--r-sm); padding: 14px 16px 14px 32px; margin: 0; }
+  .caveats li { color: var(--ink-2); font-size: 13px; margin-bottom: 7px; }
+  .caveats li:last-child { margin-bottom: 0; }
+
+  .survival { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .surv {
+    font: 500 11px/1 var(--mono);
+    padding: 6px 8px;
+    border-radius: 2px;
+    border: 1px solid var(--edge);
+    color: var(--ink-2);
+  }
+
+  .surv.yes { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
+  .surv.no  { border-color: var(--stop); color: var(--stop); background: var(--stop-soft); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--edge-soft); vertical-align: top; }
+  th { font: 700 10px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  td.mono, .mono { font-family: var(--mono); font-size: 12.5px; }
+  .scroll-x { overflow-x: auto; }
+
+  .reveal { color: var(--flag); opacity: .8; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+  .grow { flex: 1 1 200px; }
+
+  .note {
+    font-size: 13px;
+    color: var(--ink-2);
+    background: var(--carbon-soft);
+    border-radius: var(--r-sm);
+    padding: 12px 14px;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid var(--edge);
+    color: var(--ink-3);
+    font-size: 12.5px;
+  }
+
+  .footer a { color: var(--carbon); }
+
+  fieldset { border: 1px solid var(--edge-soft); border-radius: var(--r-sm); padding: 12px 14px; margin: 0; }
+  legend { font: 700 10px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); padding: 0 6px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 14px; }
+  .checks label { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--paper);
+    font: 500 13px/1 var(--body);
+    padding: 11px 16px;
+    border-radius: var(--r-sm);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease;
+  }
+
+  .toast[data-show="true"] { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  @media (max-width: 860px) {
+    .duplicate, .two-col { grid-template-columns: 1fr; }
+    .leaf + .leaf { border-left: none; border-top: 1px dashed var(--edge); }
+    .wordmark { font-size: 28px; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <h1 class="wordmark">Carb<span>o</span>nite</h1>
+      <p class="tagline">Write the assignment on the top sheet. Write the instruction for an AI reader on the carbon copy underneath. Hand out one document; check what comes back.</p>
+    </div>
+    <div class="keychip" id="keychip"><span class="dot off"></span><span id="keychip-text">no signing key</span></div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" id="tab-compose" role="tab" aria-selected="true" aria-controls="panel-compose">Compose</button>
+    <button class="tab" id="tab-verify" role="tab" aria-selected="false" aria-controls="panel-verify">Verify</button>
+    <button class="tab" id="tab-toolkit" role="tab" aria-selected="false" aria-controls="panel-toolkit">Toolkit</button>
+  </nav>
+
+  <!-- ------------------------------------------------------------ compose -->
+  <section class="panel" id="panel-compose" role="tabpanel" aria-labelledby="tab-compose" data-active="true">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div>
+          <span class="eyebrow">Assignment record</span>
+          <h2>Who is issuing this, and for what</h2>
+        </div>
+        <span class="pill mute" id="example-flag">Example assignment loaded &mdash; replace it with your own</span>
+      </div>
+      <div class="sheet-body">
+        <div class="field-row">
+          <div><label class="f" for="f-course">Course</label><input type="text" id="f-course" placeholder="HIST 210"></div>
+          <div><label class="f" for="f-title">Assignment</label><input type="text" id="f-title" placeholder="Essay 2"></div>
+          <div><label class="f" for="f-teacher">Instructor</label><input type="text" id="f-teacher" placeholder="Ms. Rivera"></div>
+          <div><label class="f" for="f-contact">Contact for questions</label><input type="text" id="f-contact" placeholder="rivera@example.edu"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="duplicate">
+        <div class="leaf">
+          <div class="leaf-head"><span class="sheet-no">sheet 1</span><h3>Assignment text</h3></div>
+          <p class="leaf-note">Exactly what students read. Carbonite never changes a word of it.</p>
+          <label class="f" for="f-assignment">Assignment</label>
+          <textarea id="f-assignment" spellcheck="true"></textarea>
+          <p class="hint" id="assignment-stats">&nbsp;</p>
+        </div>
+        <div class="leaf">
+          <div class="leaf-head"><span class="sheet-no">sheet 2</span><h3>Instruction for an AI reader</h3></div>
+          <p class="leaf-note">Travels with the text but stays out of sight. Students never read this; a chatbot that is handed the assignment does.</p>
+          <label class="f" for="f-template">Start from</label>
+          <select id="f-template"></select>
+          <p class="hint" id="template-note">&nbsp;</p>
+          <label class="f" for="f-prompt" style="margin-top:12px">Instruction</label>
+          <textarea id="f-prompt" spellcheck="true"></textarea>
+          <p class="hint">Write <code class="mono">{{token}}</code> where the marker word should go.</p>
+          <div id="review" class="stack" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head">
+        <div><span class="eyebrow">Delivery</span><h2>How the marker travels</h2></div>
+      </div>
+      <div class="sheet-body stack">
+        <fieldset>
+          <legend>Carriers</legend>
+          <div class="checks" id="codec-checks"></div>
+          <p class="hint" id="codec-note">&nbsp;</p>
+        </fieldset>
+        <div class="row">
+          <div class="grow"><label class="f" for="f-channels">Recommend carriers for</label><select id="f-channels"></select></div>
+          <div class="grow"><label class="f" for="f-placement">Placement</label><select id="f-placement"></select></div>
+          <div style="flex:0 0 110px"><label class="f" for="f-copies">Copies</label><input type="number" id="f-copies" min="1" max="12" value="3"></div>
+          <div style="flex:0 0 130px"><label class="f" for="f-ttl">Expires in (days)</label><input type="number" id="f-ttl" min="0" max="3650" value="180"></div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-issue">Issue marked assignment</button>
+          <button class="btn ghost small" id="btn-reset">Reset to example</button>
+          <span class="hint" id="issue-note"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="output"></div>
+  </section>
+
+  <!-- ------------------------------------------------------------- verify -->
+  <section class="panel" id="panel-verify" role="tabpanel" aria-labelledby="tab-verify">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div><span class="eyebrow">Submission</span><h2>Check what came back</h2></div>
+        <span class="pill mute">Nothing leaves this page</span>
+      </div>
+      <div class="sheet-body stack">
+        <div class="row">
+          <div class="grow"><label class="f" for="f-expect">Expected assignment</label><select id="f-expect"></select></div>
+          <button class="btn" id="btn-verify">Check submission</button>
+        </div>
+        <div>
+          <label class="f" for="f-submission">Paste the student's text</label>
+          <textarea id="f-submission" class="doc" spellcheck="false" placeholder="Paste the submission here, ideally from the original file rather than a copy of a copy."></textarea>
+        </div>
+      </div>
+    </div>
+    <div id="verify-output"></div>
+  </section>
+
+  <!-- ------------------------------------------------------------ toolkit -->
+  <section class="panel" id="panel-toolkit" role="tabpanel" aria-labelledby="tab-toolkit">
+    <div class="two-col">
+      <div class="sheet">
+        <div class="sheet-head"><div><span class="eyebrow">Keys</span><h2>Signing</h2></div></div>
+        <div class="sheet-body stack">
+          <p class="hint">A key proves a marker is one you issued. It is stored in this browser only &mdash; not on a server, and not in the marked document.</p>
+          <div class="row">
+            <div class="grow"><label class="f" for="f-keylabel">Label</label><input type="text" id="f-keylabel" placeholder="Ms. Rivera, HIST 210"></div>
+            <button class="btn small" id="btn-keygen">Create key</button>
+          </div>
+          <div id="key-list"></div>
+        </div>
+      </div>
+      <div class="sheet">
+        <div class="sheet-head"><div><span class="eyebrow">Issued</span><h2>Marker register</h2></div></div>
+        <div class="sheet-body">
+          <div id="registry-list" class="scroll-x"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head"><div><span class="eyebrow">Any text</span><h2>Scan and clean</h2></div></div>
+      <div class="sheet-body stack">
+        <p class="hint">Find every hidden character in a document &mdash; ours, someone else's, or none &mdash; and strip them out if you want a clean copy.</p>
+        <textarea id="f-scan" class="doc" spellcheck="false" placeholder="Paste any text to inspect."></textarea>
+        <div class="actions">
+          <button class="btn small" id="btn-scan">Scan</button>
+          <button class="btn ghost small" id="btn-strip">Strip hidden characters</button>
+        </div>
+        <div id="scan-output"></div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head"><div><span class="eyebrow">Reference</span><h2>What the pieces do</h2></div></div>
+      <div class="sheet-body stack" id="reference"></div>
+    </div>
+  </section>
+
+  <p class="footer">
+    Carbonite is evidence, not proof. A marker can show that assignment text reached an AI system; it cannot show who did it,
+    when, or whether your course allowed it &mdash; and a student who retypes the assignment leaves no trace at all.
+    Tell students in the syllabus that assignments are marked, and follow your institution's process rather than this page.
+  </p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="./app.js"></script>

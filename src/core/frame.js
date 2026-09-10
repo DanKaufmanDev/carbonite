@@ -117,8 +117,11 @@ export async function unpackFrame(bytes, { keys = [] } = {}) {
     if (usable.length === 0) {
       macStatus = 'no-key';
     } else {
-      key = await findSigningKey(usable, bytes.slice(0, macOffset), mac);
-      macStatus = key ? 'valid' : 'unknown-key';
+      const match = await findSigningKey(usable, bytes.slice(0, macOffset), mac);
+      macStatus = match ? 'valid' : 'unknown-key';
+      // Identify the key, never carry it: parsed frames end up in reports that
+      // get printed, copied into email and filed as evidence.
+      key = match ? { kid: match.kid, label: match.label } : undefined;
     }
   }
 

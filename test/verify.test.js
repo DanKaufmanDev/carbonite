@@ -130,3 +130,31 @@ describe('verifying a submission', () => {
     assert.doesNotThrow(() => JSON.stringify(report));
   });
 });
+
+describe('reports are safe to file and forward', () => {
+  it('never contains the signing key', async () => {
+    const { k, result, registry } = await issue();
+    for (const report of [
+      await verifySubmission(result.document, { keys: [k], registry }),
+      await verifySubmission(`marked ${result.token}`, { keys: [k], registry }),
+    ]) {
+      assert.ok(!JSON.stringify(report).includes(k.secret), 'the report leaks the signing key');
+    }
+    const { auditDocument } = await import('../src/core/verify.js');
+    const audit = await auditDocument(result.document, { keys: [k], registry });
+    assert.ok(!JSON.stringify(audit).includes(k.secret), 'the audit leaks the signing key');
+  });
+});
+
+describe('token search is robust to odd input', () => {
+  it('ignores a token with nothing to match on', async () => {
+    const report = await verifySubmission('An ordinary essay.', { tokens: ['---', '', '   '] });
+    assert.equal(report.verdict.code, 'no-signal');
+  });
+
+  it('treats a token as text, never as a pattern', async () => {
+    const report = await verifySubmission('An essay mentioning a(b)c+ somewhere.', { tokens: ['a(b)c+'] });
+    assert.equal(report.tokens.length, 1, 'the literal token should match itself');
+    assert.equal((await verifySubmission('unrelated prose', { tokens: ['.*'] })).tokens.length, 0);
+  });
+});

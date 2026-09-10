@@ -66,12 +66,17 @@ export function containment(needle, haystack, size = 4) {
 /** Case-insensitive, punctuation-tolerant search for the marker token. */
 export function findToken(text, token) {
   if (!token) return [];
+  // Punctuation in the token is allowed to drift: "amber-slate-42" should still
+  // match "amber slate 42". Every non-alphanumeric is replaced, so nothing the
+  // caller passes reaches the regex engine as syntax.
   const loose = String(token).trim().replace(/[^\p{L}\p{N}]+/gu, '[^\\p{L}\\p{N}]{0,3}');
+  if (!/[\p{L}\p{N}]/u.test(String(token))) return [];
   const re = new RegExp(loose, 'giu');
   const hits = [];
   let match;
   const haystack = normalizeForCompare(text);
   while ((match = re.exec(haystack)) !== null) {
+    if (match[0].length === 0) { re.lastIndex++; continue; }
     hits.push({ index: match.index, text: match[0], context: excerpt(haystack, match.index, match[0].length) });
     if (hits.length >= 25) break;
   }

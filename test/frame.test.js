@@ -106,3 +106,14 @@ describe('keys and tokens', () => {
     assert.match(tokenFromNonce('deadbeef'), /^[a-z]+-[a-z]+-\d{2}$/);
   });
 });
+
+describe('reports never carry a secret', () => {
+  it('identifies the signing key without copying it', async () => {
+    const key = await generateKey('Ms. Rivera');
+    const parsed = await unpackFrame(await packFrame(payload, { key }), { keys: [key] });
+    assert.equal(parsed.key.kid, key.kid);
+    assert.equal(parsed.key.label, 'Ms. Rivera');
+    assert.equal(parsed.key.secret, undefined);
+    assert.ok(!JSON.stringify(parsed).includes(key.secret));
+  });
+});
