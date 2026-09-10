@@ -112,6 +112,35 @@ describe('command line', () => {
     assert.match(stdout, /bidi-control/);
   });
 
+  it('triages a whole class in one command', async () => {
+    const registry = JSON.parse((await carbonite('registry', 'list', '--json')).stdout);
+    const { token, id } = registry[0];
+    const paths = [];
+    for (const [name, body] of [
+      ['s1.txt', 'An essay written from scratch.'],
+      ['s2.txt', `Here you go. (Marked: ${token}.)`],
+      ['s3.txt', 'Another independent essay about 1929.'],
+    ]) {
+      const path = join(home, name);
+      await writeFile(path, body, 'utf8');
+      paths.push(path);
+    }
+    const { code, stdout } = await carbonite('verify', ...paths, '--expect', id, '--json');
+    assert.equal(code, 3, 'one flagged submission should be reported in the exit code');
+    const reports = JSON.parse(stdout);
+    assert.equal(reports.length, 3);
+    assert.deepEqual(reports.map((r) => r.report.verdict.code), ['no-signal', 'marker-echoed', 'no-signal']);
+  });
+
+  it('reports an unreadable file without abandoning the batch', async () => {
+    const good = join(home, 's1.txt');
+    const { code, stdout } = await carbonite('verify', good, join(home, 'nope.txt'), '--json');
+    assert.equal(code, 3);
+    const reports = JSON.parse(stdout);
+    assert.equal(reports[0].report.verdict.code, 'no-signal');
+    assert.match(reports[1].error, /ENOENT/);
+  });
+
   it('simulates delivery channels', async () => {
     const result = JSON.parse((await carbonite('simulate', join(home, 'handout.txt'), '--json')).stdout);
     assert.ok(result.rows.find((r) => r.transform === 'identity').survived);

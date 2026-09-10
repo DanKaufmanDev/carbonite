@@ -10,6 +10,7 @@
  * inside a marking script as easily as in a terminal.
  */
 import { readFile, writeFile } from 'node:fs/promises';
+import { basename } from 'node:path';
 import process from 'node:process';
 
 import { mark, noticeText } from '../src/core/inject.js';
@@ -42,7 +43,7 @@ Authoring
   audit <file>                            check a marked document before handing it out
 
 Checking
-  verify <file> [--expect <id>]           check a student submission
+  verify <file...> [--expect <id>]        check submissions; several files give a triage table
   inspect <file>                          decode any markers found, no judgement
   scan <file>                             report hidden characters of every kind
   strip <file>                            remove markers and hidden characters
@@ -243,17 +244,51 @@ const commands = {
   },
 
   async verify(positionals, options) {
-    const submission = await readInput(positionals[0]);
     const keys = await store.loadKeys();
     const registry = options.registry === false ? undefined : await store.loadRegistry();
     const assignmentText = options.assignment ? await readInput(options.assignment) : undefined;
-    const report = await verifySubmission(submission, {
+    const settings = {
       keys,
       registry,
       assignmentText,
       expectId: str(options.expect),
       tokens: options.token ? String(options.token).split(',') : [],
-    });
+    };
+
+    // One submission: the full report. A whole class: a triage table first,
+    // because thirty full reports is not something anybody reads.
+    if (positionals.length > 1) {
+      const reports = [];
+      for (const path of positionals) {
+        try {
+          reports.push({ file: path, report: await verifySubmission(await readInput(path), settings) });
+        } catch (error) {
+          reports.push({ file: path, error: error.message });
+        }
+      }
+      if (options.json) {
+        await output(asJson(reports), options);
+      } else {
+        const flagged = reports.filter((r) => r.report && r.report.verdict.code !== 'no-signal');
+        await output([
+          heading(`Checked ${reports.length} submissions`),
+          table(reports, [
+            { label: 'file', value: (r) => basename(r.file) },
+            { label: 'result', value: (r) => (r.error ? 'unreadable' : r.report.verdict.code) },
+            { label: 'confidence', value: (r) => r.report?.verdict.confidence || '-' },
+            { label: 'score', value: (r) => r.report?.score ?? '-' },
+            { label: 'signals', value: (r) => (r.report?.signals || []).map((s) => s.id).join(' ') || (r.error ?? '-') },
+          ], { max: 60 }),
+          '',
+          flagged.length
+            ? style.yellow(wrapText(`${flagged.length} submission(s) carry a signal. Run \`carbonite verify <file>\` on each one for the full report and its caveats before acting on any of them.`, 78, 2))
+            : style.dim(wrapText('No submission carries a signal. That is not evidence that every submission is unaided - it is the absence of one particular kind of trace.', 78, 2)),
+        ].join('\n'), options);
+      }
+      return reports.some((r) => r.error || r.report.verdict.code !== 'no-signal') ? 3 : 0;
+    }
+
+    const report = await verifySubmission(await readInput(positionals[0]), settings);
     await output(options.json ? asJson(report) : renderVerify(report), options);
     return report.verdict.code === 'no-signal' ? 0 : 3;
   },

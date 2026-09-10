@@ -44,7 +44,12 @@ carbonite mark --assignment essay2.txt \
 carbonite audit handout.txt --original essay2.txt   # check before distributing
 
 carbonite verify submission.txt --expect cbn_a1b2c3d4e5f6   # check what came back
+
+carbonite verify submissions/*.txt --expect cbn_a1b2c3d4e5f6   # or the whole class
 ```
+
+Several files give a triage table rather than thirty full reports; run the
+single-file form on anything it flags, because that is where the caveats are.
 
 `mark` prints the marked document to stdout (or `--out`) and the summary to
 stderr, so `carbonite mark ... > handout.txt` gives you a clean file.
@@ -136,7 +141,7 @@ Read these as part of the tool, not as a disclaimer.
 | `keygen` | create a signing key (stored in `~/.carbonite`, mode 0600) |
 | `mark` | write a marked document |
 | `audit` | check a marked document before handing it out |
-| `verify` | check a submission |
+| `verify` | check one submission, or a whole folder at once |
 | `inspect` | decode markers, no judgement |
 | `scan` | report hidden characters of every kind, ours or not |
 | `strip` | remove markers and hidden characters |
